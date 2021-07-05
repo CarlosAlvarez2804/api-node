@@ -7,7 +7,7 @@ const { isAuthenticated } = require('../auth')
 const router = express.Router()
 
 const signToken = (_id) => {
-    return jwt.sign({ _is }, 'my-secret', {
+    return jwt.sign({ _id }, 'my-secret', {
         expiresIn: 60 * 60 * 24 * 365,
     })
 }
@@ -40,13 +40,14 @@ router.post('/login', (req, res) => {
     const { email, password } = req.body
     Users.findOne({ email }).exec()
     .then(user => {
+        console.log(user)
         if (!user) {
             return res.send('User and/or password incorrect')
         }
         crypto.pbkdf2(password, user.salt, 10000, 64, 'sha1', (err, key) => {
             const encryptPassword = key.toString('base64')
             if (user.password === encryptPassword) {
-                const token = singToken(user._id)
+                const token = signToken(user._id)
                 return res.send({ token })
             }
             return res.send('User and/or password incorrect')
